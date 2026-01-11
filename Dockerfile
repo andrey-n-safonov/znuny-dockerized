@@ -13,18 +13,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     gnupg \
     wget \
+    lsb-release \
     # Web server
     apache2 \
     libapache2-mod-perl2 \
     # Database clients
     mariadb-client \
-    postgresql-client \
     # Perl
     perl \
     # Process management
     supervisor \
     cron \
-    && rm -rf /var/lib/apt/lists/* \
+    && \
+    # Add PostgreSQL 16 repository
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends postgresql-client-16 \
+    && \
+    rm -rf /var/lib/apt/lists/* \
     && rm -rf /usr/share/doc/* \
     && rm -rf /usr/share/man/* \
     && rm -rf /var/cache/apt/* \

@@ -1,0 +1,115 @@
+services:
+  # PostgreSQL variant
+  znuny-postgres:
+    image: andreynsafonov/znuny:${IMAGE_TAG}
+    container_name: znuny-postgres
+    ports:
+      - "8080:80"
+    environment:
+      - ZNUNY_DB_TYPE=postgresql
+      - ZNUNY_DB_HOST=postgres
+      - ZNUNY_DB_PORT=5432
+      - ZNUNY_DB_NAME=znuny
+      - ZNUNY_DB_USER=znuny
+      - ZNUNY_DB_PASSWORD=znuny_password
+      - ZNUNY_AUTO_INSTALL=true
+      - ZNUNY_ROOT_PASSWORD=changeme
+      - ZNUNY_FQDN=localhost
+      - ZNUNY_ADMIN_EMAIL=admin@example.com
+      - ZNUNY_ORGANIZATION=Example Company
+    volumes:
+      - znuny-postgres-data:/opt/znuny/var
+      - znuny-postgres-custom:/opt/znuny/Custom
+      - znuny-postgres-config:/opt/znuny/Kernel/Config
+    depends_on:
+      - postgres
+    networks:
+      - znuny-postgres-net
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: znuny-postgres-db
+    environment:
+      - POSTGRES_DB=znuny
+      - POSTGRES_USER=znuny
+      - POSTGRES_PASSWORD=znuny_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - znuny-postgres-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U znuny"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MySQL variant
+  znuny-mysql:
+    image: andreynsafonov/znuny:${IMAGE_TAG:-latest}
+    container_name: znuny-mysql
+    ports:
+      - "8081:80"
+    environment:
+      - ZNUNY_DB_TYPE=mysql
+      - ZNUNY_DB_HOST=mysql
+      - ZNUNY_DB_PORT=3306
+      - ZNUNY_DB_NAME=znuny
+      - ZNUNY_DB_USER=znuny
+      - ZNUNY_DB_PASSWORD=znuny_password
+      - ZNUNY_AUTO_INSTALL=true
+      - ZNUNY_ROOT_PASSWORD=changeme
+      - ZNUNY_SYSTEM_ID=20
+      - ZNUNY_FQDN=localhost
+      - ZNUNY_ADMIN_EMAIL=admin@example.com
+      - ZNUNY_ORGANIZATION=Example Company
+    volumes:
+      - znuny-mysql-data:/opt/znuny/var
+      - znuny-mysql-custom:/opt/znuny/Custom
+      - znuny-mysql-config:/opt/znuny/Kernel/Config
+    depends_on:
+      - mysql
+    networks:
+      - znuny-mysql-net
+    restart: unless-stopped
+    profiles:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    container_name: znuny-mysql-db
+    environment:
+      - MYSQL_DATABASE=znuny
+      - MYSQL_USER=znuny
+      - MYSQL_PASSWORD=znuny_password
+      - MYSQL_ROOT_PASSWORD=root_password
+    command: --default-authentication-plugin=mysql_native_password --max_allowed_packet=64M
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - znuny-mysql-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - mysql
+
+volumes:
+  znuny-postgres-data:
+  znuny-postgres-custom:
+  znuny-postgres-config:
+  postgres-data:
+  znuny-mysql-data:
+  znuny-mysql-custom:
+  znuny-mysql-config:
+  mysql-data:
+
+networks:
+  znuny-postgres-net:
+    driver: bridge
+  znuny-mysql-net:
+    driver: bridge

@@ -9,9 +9,9 @@ CONFIG_FILE="${ZNUNY_HOME}/Kernel/Config/Config.pm"
 CONFIG_LINK="${ZNUNY_HOME}/Kernel/Config.pm"
 INSTALLED_FLAG="${ZNUNY_HOME}/var/.znuny_installed"
 
-# Logging function - outputs to stdout for docker logs
+# Logging function - outputs to stdout immediately without buffering
 log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [AUTOINSTALL] $1"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [AUTOINSTALL] $1" >&2
 }
 
 log_error() {
@@ -66,37 +66,42 @@ log "  System ID: $SYSTEM_ID"
 # Wait for database to be ready
 log "Waiting for database to be ready..."
 
-# Initial delay for Docker Swarm - services start in parallel without depends_on
-log "Initial delay (20s) to allow database service to start..."
-sleep 20
-
 # Wait for database connection to be ready
 # Note: In Docker Swarm overlay networks, DNS works but getent/nslookup may fail
 # We test actual connection instead of DNS resolution
-MAX_RETRIES=120
+MAX_RETRIES=60
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     if [ "$DB_TYPE" = "postgresql" ]; then
-        if PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c '\q' 2>/dev/null; then
+        ERROR_OUTPUT=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c '\q' 2>&1)
+        RESULT=$?
+        if [ $RESULT -eq 0 ]; then
             log "PostgreSQL is ready"
             break
+        else
+            log "Connection failed: $ERROR_OUTPUT"
         fi
     else
-        if mysqladmin ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --password="$DB_PASSWORD" --silent 2>/dev/null; then
+        ERROR_OUTPUT=$(mysqladmin ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --password="$DB_PASSWORD" --silent 2>&1)
+        RESULT=$?
+        if [ $RESULT -eq 0 ]; then
             log "MySQL is ready"
             break
+        else
+            log "Connection failed: $ERROR_OUTPUT"
         fi
     fi
     
     RETRY_COUNT=$((RETRY_COUNT + 1))
     if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-        log_error "Database is not ready after $MAX_RETRIES attempts ($(($MAX_RETRIES * 3 / 60)) minutes)"
-        log_error "Check: 1) Database service is running, 2) Network connectivity, 3) Credentials"
+        log_error "Database is not ready after $MAX_RETRIES attempts ($(($MAX_RETRIES * 2 / 60)) minutes)"
+        log_error "Last error: $ERROR_OUTPUT"
+        log_error "Check: 1) Database service is running, 2) Network connectivity, 3) Credentials match"
         exit 1
     fi
-    log "Database not ready yet, waiting... (attempt $RETRY_COUNT/$MAX_RETRIES)"
-    sleep 3
+    log "Database not ready, attempt $RETRY_COUNT/$MAX_RETRIES - waiting 2s..."
+    sleep 2
 done
 
 # Check if database already has Znuny schema

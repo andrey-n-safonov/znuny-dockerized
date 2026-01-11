@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Redirect all output to stderr to avoid buffering issues in Docker logs
+exec 2>&1
+
 ZNUNY_HOME="${ZNUNY_HOME:-/opt/znuny}"
 CONFIG_DIR="${ZNUNY_HOME}/Kernel/Config"
 CONFIG_FILE="${CONFIG_DIR}/Config.pm"
