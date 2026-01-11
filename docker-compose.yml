@@ -18,9 +18,7 @@ services:
       - ZNUNY_ADMIN_EMAIL=admin@example.com
       - ZNUNY_ORGANIZATION=Example Company
     volumes:
-      - znuny-postgres-data:/opt/znuny/var
-      - znuny-postgres-custom:/opt/znuny/Custom
-      - znuny-postgres-config:/opt/znuny/Kernel/Config
+      - znuny-postgres-data:/opt/znuny
     depends_on:
       - postgres
     networks:
@@ -65,9 +63,7 @@ services:
       - ZNUNY_ADMIN_EMAIL=admin@example.com
       - ZNUNY_ORGANIZATION=Example Company
     volumes:
-      - znuny-mysql-data:/opt/znuny/var
-      - znuny-mysql-custom:/opt/znuny/Custom
-      - znuny-mysql-config:/opt/znuny/Kernel/Config
+      - znuny-mysql-data:/opt/znuny
     depends_on:
       - mysql
     networks:
@@ -100,12 +96,8 @@ services:
 
 volumes:
   znuny-postgres-data:
-  znuny-postgres-custom:
-  znuny-postgres-config:
   postgres-data:
   znuny-mysql-data:
-  znuny-mysql-custom:
-  znuny-mysql-config:
   mysql-data:
 
 networks:

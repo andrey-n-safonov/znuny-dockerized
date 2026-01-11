@@ -140,7 +140,7 @@ RUN a2ensite znuny \
 # Expose HTTP port
 EXPOSE 80
 
-VOLUME ["${ZNUNY_HOME}/var", "${ZNUNY_HOME}/Kernel", "${ZNUNY_HOME}/Custom"]
+VOLUME ["${ZNUNY_HOME}"]
 
 WORKDIR ${ZNUNY_HOME}
 
