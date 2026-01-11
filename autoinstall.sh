@@ -65,7 +65,15 @@ log "  System ID: $SYSTEM_ID"
 
 # Wait for database to be ready
 log "Waiting for database to be ready..."
-MAX_RETRIES=30
+
+# Initial delay for Docker Swarm - services start in parallel without depends_on
+log "Initial delay (20s) to allow database service to start..."
+sleep 20
+
+# Wait for database connection to be ready
+# Note: In Docker Swarm overlay networks, DNS works but getent/nslookup may fail
+# We test actual connection instead of DNS resolution
+MAX_RETRIES=120
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
@@ -83,11 +91,12 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     
     RETRY_COUNT=$((RETRY_COUNT + 1))
     if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-        log_error "Database is not ready after $MAX_RETRIES attempts"
+        log_error "Database is not ready after $MAX_RETRIES attempts ($(($MAX_RETRIES * 3 / 60)) minutes)"
+        log_error "Check: 1) Database service is running, 2) Network connectivity, 3) Credentials"
         exit 1
     fi
     log "Database not ready yet, waiting... (attempt $RETRY_COUNT/$MAX_RETRIES)"
-    sleep 2
+    sleep 3
 done
 
 # Check if database already has Znuny schema
