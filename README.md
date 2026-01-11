@@ -48,6 +48,7 @@ docker pull andreynsafonov/znuny:latest
 
 # Specific version
 docker pull andreynsafonov/znuny:7.2.3
+```
 
 ## Configuration
 
@@ -193,34 +194,6 @@ After starting the container, open your browser and navigate to <http://localhos
 
 **IMPORTANT:** Change the password immediately after first login!
 
-## Building Image
-
-### Local Development Build
-
-```bash
-# Build the image (multi-layer, optimized for caching)
-./build.sh
-
-# Test with PostgreSQL
-docker compose up -d
-
-# Test with MySQL
-docker compose --profile mysql up -d znuny-mysql mysql
-```
-
-### Updates
-
-```bash
-# Stop containers
-docker compose down
-
-# Pull latest image
-docker pull andreynsafonov/znuny:latest
-
-# Start with new image
-docker compose up -d
-```
-
 ### Logs
 
 ```bash
@@ -261,7 +234,6 @@ docker compose logs znuny-postgres
 
 # Check database status
 docker compose logs postgres
-
 
 # Check autoinstall logs
 docker compose logs znuny-postgres | grep AUTOINSTALL
