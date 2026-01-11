@@ -1,10 +1,10 @@
-# Znuny LTS Docker Image
+# Znuny Docker Image
 
 [![Docker Hub](https://img.shields.io/docker/v/andreynsafonov/znuny?sort=semver)](https://hub.docker.com/r/andreynsafonov/znuny)
 [![Docker Pulls](https://img.shields.io/docker/pulls/andreynsafonov/znuny)](https://hub.docker.com/r/andreynsafonov/znuny)
 [![Image Size](https://img.shields.io/docker/image-size/andreynsafonov/znuny/7.2.3)](https://hub.docker.com/r/andreynsafonov/znuny)
 
-Lightweight Docker image for [Znuny LTS](https://www.znuny.org/) - an open-source ticket management system.
+Lightweight Docker image for [Znuny](https://www.znuny.org/) - an open-source ticket management system.
 
 ## Features
 
