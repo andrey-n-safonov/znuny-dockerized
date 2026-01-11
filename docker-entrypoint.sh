@@ -8,6 +8,8 @@ ZNUNY_HOME="${ZNUNY_HOME:-/opt/znuny}"
 
 # Set permissions (ignore errors with /dev/stdout symlinks)
 echo "Setting permissions..."
+chown -R znuny:www-data ${ZNUNY_HOME}
+chmod -R g+w ${ZNUNY_HOME}
 ${ZNUNY_HOME}/bin/otrs.SetPermissions.pl 2>&1 | grep -v "is encountered a second time" || true
 
 # Run auto-installation if enabled

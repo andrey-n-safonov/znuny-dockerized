@@ -71,17 +71,23 @@ docker pull andreynsafonov/znuny:7.2.3
 
 ## Volumes
 
-- `/opt/znuny/var` - Application data (articles, sessions, cache, logs)
-- `/opt/znuny/Kernel/Config` - Base configuration (Config.pm) - persisted across container restarts
-- `/opt/znuny/Custom` - Custom modules, themes, and configuration files
+- `/opt/znuny` - Complete Znuny installation (application, data, configuration)
+
+**Why Mount Entire Directory:**
+
+Mounting `/opt/znuny` as a single volume ensures that:
+
+- Installed extensions (OPM packages) persist across container restarts
+- All configuration files remain intact
+- Custom modules and themes are preserved
+- Application updates can be managed consistently
 
 **Configuration Management:**
 
-- `/opt/znuny/Kernel/Config/Config.pm` is automatically generated on first install from environment variables and stored in volume
-- Base settings (database, paths, security) are stored in Config.pm and persist across container restarts
+- `/opt/znuny/Kernel/Config.pm` is automatically generated on first install from environment variables
+- System settings (database, paths, security) persist in the volume
 - Custom settings (SystemID, FQDN, Organization) are managed via SysConfig web interface and stored in database
 - For custom code configurations, place `.pm` files in `/opt/znuny/Custom/Kernel/Config/Files/`
-- Custom configs in `/opt/znuny/Custom/` override system defaults
 
 ## Production Usage
 
@@ -104,9 +110,7 @@ services:
       - ZNUNY_ROOT_PASSWORD=secure_password
       - ZNUNY_FQDN=support.example.com
     volumes:
-      - znuny-data:/opt/znuny/var
-      - znuny-config:/opt/znuny/Kernel/Config
-      - znuny-custom:/opt/znuny/Custom
+      - znuny-data:/opt/znuny
     depends_on:
       postgres:
         condition: service_healthy
@@ -129,8 +133,6 @@ services:
 
 volumes:
   znuny-data:
-  znuny-config:
-  znuny-custom:
   postgres-data:
 ```
 
@@ -151,9 +153,7 @@ services:
       - ZNUNY_AUTO_INSTALL=true
       - ZNUNY_ROOT_PASSWORD=secure_password
     volumes:
-      - znuny-data:/opt/znuny/var
-      - znuny-config:/opt/znuny/Kernel
-      - znuny-custom:/opt/znuny/Custom
+      - znuny-data:/opt/znuny
     depends_on:
       mysql:
         condition: service_healthy
@@ -178,8 +178,6 @@ services:
 
 volumes:
   znuny-data:
-  znuny-config:
-  znuny-custom:
   mysql-data:
 ```
 
